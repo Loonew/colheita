@@ -2,19 +2,23 @@
 
 require_once("vendor/autoload.php");
 
-$app = new \Slim\Slim();
+use \Slim\Slim;
+use \Colheita\Page;
+
+$app = new Slim();
 
 $app->config('debug', true);
 
 $app->get('/', function() {
     
-	$sql = new Colheita\DB\Sql();
+	$page = new Page();
 
-	$results = $sql->select("SELECT * FROM tb_users");
+	$page->setTPL("index");
 
-	echo json_encode($results);
+
+
 });
 
-$app->run();
+$app->run(); //essa linha diz "tudo carregado? Sim? Roda"
 
  ?>
