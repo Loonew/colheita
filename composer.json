@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "": "vendor\\colheita\\classes\\src"
+            "Colheita\\": "vendor\\Colheita\\php-classes\\src"
         }
     }
 }

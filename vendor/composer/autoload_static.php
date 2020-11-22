@@ -6,8 +6,18 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitac1ea436f257da24bcaf056613cec3b2
 {
-    public static $fallbackDirsPsr4 = array (
-        0 => __DIR__ . '/..' . '/colheita/classes/src',
+    public static $prefixLengthsPsr4 = array (
+        'C' => 
+        array (
+            'Colheita\\' => 9,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'Colheita\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/Colheita/php-classes/src',
+        ),
     );
 
     public static $prefixesPsr0 = array (
@@ -42,7 +52,8 @@ class ComposerStaticInitac1ea436f257da24bcaf056613cec3b2
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->fallbackDirsPsr4 = ComposerStaticInitac1ea436f257da24bcaf056613cec3b2::$fallbackDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitac1ea436f257da24bcaf056613cec3b2::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitac1ea436f257da24bcaf056613cec3b2::$prefixDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInitac1ea436f257da24bcaf056613cec3b2::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitac1ea436f257da24bcaf056613cec3b2::$classMap;
 
