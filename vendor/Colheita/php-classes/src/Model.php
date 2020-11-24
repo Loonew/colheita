@@ -6,17 +6,6 @@ class Model {
 
 	private $values = [];
 
-	public function setData($data)
-	{
-
-		foreach ($data as $key => $value)
-		{
-
-			$this->{"set".$key}($value);
-
-		}
-
-	}
 
 	public function __call($name, $args)//o nome do método que for chamado (get ou set) e os argumentos de parametro
 	{
@@ -39,6 +28,18 @@ class Model {
 				break;
 
 			}
+
+		}
+
+	}
+
+	public function setData($data = array())
+	{
+
+		foreach ($data as $key => $value)
+		{
+
+			$this->{"set".$key}($value);
 
 		}
 
