@@ -13,14 +13,13 @@ class Model {
 		$method = substr($name, 0, 3);//o método é definido pelos três primeiros char
 		$fieldName = substr($name, 3, strlen($name));//conta e grava o resto do metodo
 
-		if (in_array($fieldName, $this->fields))
-		{
+		
 			
 			switch ($method)
 			{
 
 				case "get":
-					return $this->values[$fieldName];
+					return (isset($this->values[$fieldName])) ? $this->values[$fieldName] : NULL;
 				break;
 
 				case "set":
@@ -29,7 +28,7 @@ class Model {
 
 			}
 
-		}
+		
 
 	}
 
