@@ -17,6 +17,22 @@ class Product extends Model {
 
 	}
 
+	public static function checkList($list){
+
+		foreach ($list as &$row) { //o & faz o row da linha 22 ser alterado pelo foreach dentro do array list
+			
+			$p = new Product();
+			$p->setData($row);
+			$row = $p->getValues();
+		}
+
+		return $list;
+
+
+	}
+
+
+
 	public function save(){
 		$sql = new Sql();
 

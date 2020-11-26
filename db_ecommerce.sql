@@ -272,3 +272,80 @@ BEGIN
     
 END ;;
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE `sp_categories_save` (
+pidcategory INT,
+pdescategory VARCHAR(64)
+)
+BEGIN
+	
+	IF pidcategory > 0 THEN
+		
+		UPDATE tb_categories
+        SET descategory = pdescategory
+        WHERE idcategory = pidcategory;
+        
+    ELSE
+		
+		INSERT INTO tb_categories (descategory) VALUES(pdescategory);
+        
+        SET pidcategory = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * FROM tb_categories WHERE idcategory = pidcategory;
+    
+END$$
+
+DELIMITER ;
+
+USE `db_ecommerce`;
+DROP procedure IF EXISTS `sp_products_save`;
+
+DELIMITER $$
+USE `db_ecommerce`$$
+CREATE PROCEDURE `sp_products_save`(
+pidproduct int(11),
+pdesproduct varchar(64),
+pvlprice decimal(10,2),
+pvlwidth decimal(10,2),
+pvlheight decimal(10,2),
+pvllength decimal(10,2),
+pvlweight decimal(10,2),
+pdesurl varchar(128)
+)
+BEGIN
+	
+	IF pidproduct > 0 THEN
+		
+		UPDATE tb_products
+        SET 
+			desproduct = pdesproduct,
+            vlprice = pvlprice,
+            vlwidth = pvlwidth,
+            vlheight = pvlheight,
+            vllength = pvllength,
+            vlweight = pvlweight,
+            desurl = pdesurl
+        WHERE idproduct = pidproduct;
+        
+    ELSE
+		
+		INSERT INTO tb_products (desproduct, vlprice, vlwidth, vlheight, vllength, vlweight, desurl) 
+        VALUES(pdesproduct, pvlprice, pvlwidth, pvlheight, pvllength, pvlweight, pdesurl);
+        
+        SET pidproduct = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * FROM tb_products WHERE idproduct = pidproduct;
+    
+END$$
+
+
+
+DELIMITER ;
+
+
+

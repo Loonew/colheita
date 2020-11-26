@@ -1,12 +1,11 @@
 <?php 
 
-function post($key)
-{
-	return str_replace("'", "", $_POST[$key]);
+function formatPrice(float $vlprice){ //força o vlprice a ser um float
+
+	return number_format($vlprice, 2, ",", ".");//primeiro separador vai ser virgula, o de casa milhar vai ser ponto
+
+	
 }
-function get($key)
-{
-	return str_replace("'", "", $_GET[$key]);
-}
+
 
  ?>
