@@ -80,7 +80,6 @@ $app->post("/admin/products/:idproduct", function($idproduct){
 	header("Location: /admin/products");
 	exit;
 
-
 });
 
 

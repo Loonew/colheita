@@ -344,8 +344,29 @@ BEGIN
 END$$
 
 
-
 DELIMITER ;
 
+CREATE TABLE `tb_categoriesproducts` (
+  `idcategory` int(11) NOT NULL,
+  `idproduct` int(11) NOT NULL,
+  PRIMARY KEY (`idcategory`,`idproduct`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+SELECT * FROM tb_products WHERE idproduct IN(
+SELECT a.idproduct FROM tb_products a INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
+WHERE b.idcategory = 3
+);
+
+SELECT * FROM tb_products WHERE idproduct NOT IN(
+SELECT a.idproduct FROM tb_products a INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
+WHERE b.idcategory = 3
+);
+
+
+
+select * from tb_productscategories;
+
+select * from tb_categoriesproducts;
+
+select * from tb_categories;

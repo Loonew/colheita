@@ -2,6 +2,7 @@
 
 use \Colheita\Page;
 use \Colheita\Model\Product;
+use \Colheita\Model\Category;
 
 
 
@@ -18,7 +19,20 @@ $app->get('/', function() {//se a url for nada alem do .com, chama o page.php
 
 	]);
 
+});
 
+$app->get('/categories/:idcategory', function($idcategory){
+
+		$category = new Category();
+
+		$category->get((int)$idcategory);
+
+		$page = new Page();
+
+		$page->setTpl("category",[ 
+			'category'=>$category->getValues(),
+			'products'=>Product::checkList($category->getProducts())
+		]);
 
 });
 
