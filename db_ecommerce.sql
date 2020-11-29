@@ -430,5 +430,7 @@ END$$
 
 DELIMITER ;
 
+select * from tb_cartsproducts;
+select * from tb_products;
 
 
