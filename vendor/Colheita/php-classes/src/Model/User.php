@@ -9,6 +9,49 @@ class User extends Model {
 
 	const SESSION = "User";
 
+	public static function getFromSession(){
+
+		$user = new User();
+//se a sessão do usuário for a mesma da constante User, e ela for maior que 0, ou seja, não nulo, seta a session do user como a atual
+		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0) {
+
+			$user->setData($_SESSION[User::SESSION]);
+
+		}
+
+		return $user;
+
+	}
+
+	public static function checkLogin($inadmin = true){
+
+		if (//em qualquer uma dessas situações, o user não tá logado
+			!isset($_SESSION[User::SESSION]) 
+			|| 
+			!$_SESSION[User::SESSION]
+			||
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+		) {
+			//não está logado
+			return false;
+
+		} else {
+			//se a sessão existe e é um admin
+			if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {//cast em bool faz ele retornar true ou false
+
+				return true;
+			} else if ($inadmin === false){
+
+				return true;
+			} else {
+
+				return false;
+
+			}
+		}
+
+	}
+
 	protected $fields = [
 		"iduser", "idperson", "deslogin", "despassword", "inadmin", "dtergister", "desperson", "nrphone", "desemail"
 	];
@@ -62,14 +105,7 @@ class User extends Model {
 	public static function verifyLogin($inadmin = true)
 	{
 
-		if (//essas duas linhas significa "ou"
-			!isset($_SESSION[User::SESSION]) //se não estiver definida
-			|| 
-			!$_SESSION[User::SESSION]//se estiver vazia
-			||
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0//se o id do user for menor que 0
-			||
-			(bool)$_SESSION[User::SESSION]["inadmin"] !== $inadmin//se ele pode acessar a administração
+		if (User::checkLogin($inadmin)
 		) {
 			
 			header("Location: /admin/login");//faz o redirect

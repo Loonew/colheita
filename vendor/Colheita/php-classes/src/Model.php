@@ -32,19 +32,19 @@ class Model {
 
 	}
 
-	public function setData($data = array())
+	public function setData($data = array())//serve só para isolar a classe. "boa prática" e já transforma os dados em array
 	{
 
 		foreach ($data as $key => $value)
 		{
 
-			$this->{"set".$key}($value);
+			$this->{"set".$key}($value);//chama o método set da function__call com todos os valores recebidos (como array)
 
 		}
 
 	}
 
-	public function getValues() //serve só para isolar a classe. "boa prática"
+	public function getValues() //tbm serve só para isolar a classe. "boa prática". Será o get universal
 	{
 
 		return $this->values;

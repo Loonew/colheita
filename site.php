@@ -3,6 +3,7 @@
 use \Colheita\Page;
 use \Colheita\Model\Product;
 use \Colheita\Model\Category;
+use \Colheita\Model\Cart;
 
 
 
@@ -69,9 +70,12 @@ $app->get('/products/:desurl', function($desurl){
 });
 
 
+$app->get('/cart', function(){
 
+	$cart = Cart::getFromSession();
 
+	$page = new Page();
 
-
-
+	$page->setTpl("cart");
+});
 ?>
