@@ -101,18 +101,20 @@ class User extends Model {
 	public static function verifyLogin($inadmin = true)
 	{
 
-		if (!User::checkLogin($inadmin)){
-
-			if ($inadmin) {
-				header("Location: /admin/login");//faz o redirect
-			} else {
+		if (!User::checkLogin($inadmin))
+			{
+				if ($inadmin){
+				header("Location: /admin/login");
+				
+		} else{
 				header("Location: /login");
-			}
-			exit;
 
 		}
 
+		}
 	}
+
+	
 
 
 	public static function logout()

@@ -14,20 +14,21 @@
     <div class="zigzag-bottom"></div>
     <div class="container">
         <div class="row">
-            
+
             <div class="col-md-12">
                 <div class="product-content-right">
                     <div class="woocommerce">
 
                         <form action="/checkout">
-                            
+
                             <?php if( $error != '' ){ ?>
 
                             <div class="alert alert-danger" role="alert">
-                            <?php echo htmlspecialchars( $error, ENT_COMPAT, 'UTF-8', FALSE ); ?>
+                                <?php echo htmlspecialchars( $error, ENT_COMPAT, 'UTF-8', FALSE ); ?>
 
                             </div>
                             <?php } ?>
+
 
                             <table cellspacing="0" class="shop_table cart">
                                 <thead>
@@ -53,7 +54,7 @@
                                         </td>
 
                                         <td class="product-name">
-                                            <a href="/products/<?php echo htmlspecialchars( $value1["desurl"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"><?php echo htmlspecialchars( $value1["desproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?></a> 
+                                            <a href="/product/<?php echo htmlspecialchars( $value1["desurl"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"><?php echo htmlspecialchars( $value1["desproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?></a> 
                                         </td>
 
                                         <td class="product-price">
@@ -86,12 +87,12 @@
                                     <div class="coupon">
                                         <label for="cep">CEP:</label>
                                         <input type="text" placeholder="00000-000" value="<?php echo htmlspecialchars( $cart["deszipcode"], ENT_COMPAT, 'UTF-8', FALSE ); ?>" id="cep" class="input-text" name="zipcode">
-                                        <input type="submit" formmethod="post" formaction="/cart/freight" value="CÁLCULAR" class="button">
+                                        <input type="submit" formmethod="post" formaction="/cart/freight" value="CALCULAR" class="button">
                                     </div>
 
                                 </div>
 
-                                <div class="cart_totals ">
+                                <div class="cart_totals">
 
                                     <h2>Resumo da Compra</h2>
 
@@ -99,13 +100,27 @@
                                         <tbody>
                                             <tr class="cart-subtotal">
                                                 <th>Subtotal</th>
+                                                <?php if( $cart["vlsubtotal"] > 0 ){ ?>
+
                                                 <td><span class="amount">R$<?php echo formatPrice($cart["vlsubtotal"]); ?></span></td>
+
+                                                <tr class="shipping">
+                                                <th>Frete</th>
+                                                <td>R$<?php echo formatPrice($cart["vlfreight"]); ?><?php if( $cart["nrdays"] > 0 ){ ?> <small>prazo de <?php echo htmlspecialchars( $cart["nrdays"], ENT_COMPAT, 'UTF-8', FALSE ); ?> dia(s)</small><?php } ?></td>
+                                            </tr>
+                                                <?php }else{ ?>
+
+                                                <td><span class="amount">R$00,00</span></td>
                                             </tr>
 
+                                            
                                             <tr class="shipping">
                                                 <th>Frete</th>
-                                                <td>R$<?php echo formatPrice($cart["vlfreight"]); ?> <?php if( $cart["nrdays"] > 0 ){ ?> <small>prazo de <?php echo htmlspecialchars( $cart["nrdays"], ENT_COMPAT, 'UTF-8', FALSE ); ?> dia(s)</small><?php } ?></td>
-                                            </tr>
+                                                <td>R$00,00 <small>prazo de <?php echo htmlspecialchars( $cart["nrdays"], ENT_COMPAT, 'UTF-8', FALSE ); ?> dia(s)</small><?php } ?></td>
+                                            </tr></
+
+
+
 
                                             <tr class="order-total">
                                                 <th>Total</th>

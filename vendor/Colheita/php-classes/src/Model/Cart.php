@@ -16,14 +16,14 @@ class Cart extends Model {
 
 		$cart = new Cart();
 		//se a sessão selecionada for a mesma que a sessão da constante "Cart" e (dá cast em int) o id da sessão for maior que 0 (ou seja, não for null). Isso é pensando que o carrinho já exista no banco
-		if(isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0) {
+		if (isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0) {
 
 			$cart->get((int)$_SESSION[Cart::SESSION]['idcart']); //cart recebe como inteiro o idcart da sessão que foi encontrata no banco de dados. Essa busca é pelo idcart
 
 
 		} else {
 
-			$cart->getFromSessionId();//essa busca é pelo id da sessão, e o cart recebe ele
+			$cart->getFromSessionID();//essa busca é pelo id da sessão, e o cart recebe ele
 
 			//e se mesmo buscando pelo id do carrinho e pelo id da sessão ele não achar nada, cria um novo carrinho
 
@@ -31,7 +31,6 @@ class Cart extends Model {
 
 				$data = [
 					'dessessionid'=>session_id()
-
 				];
 
 				if (User::checkLogin(false))  {//na função checlLogin, isso faz com que o usuário entre, mesmo não sendo admin. Ele não é admin, mas pode entrar
@@ -55,29 +54,37 @@ class Cart extends Model {
 		return $cart;
 
 		}
-		//setta o carrinho com a session
+
 		public function setToSession(){
 
 			$_SESSION[Cart::SESSION] = $this->getValues();
 
 		}
 
+		public function removeSession()
+	{
 
-		public function getFromSessionId(){
+		$_SESSION[Cart::SESSION] = NULL;
+
+		session_regenerate_id();
+
+	}
+
+
+		public function getFromSessionID(){
 
 			$sql = new Sql();
 
 			$results = $sql->select("SELECT * FROM tb_carts WHERE dessessionid = :dessessionid", [
-				'dessessionid'=>session_id()
+				':dessessionid'=>session_id()
 			]);//pega pelo id uma sessão da tabela do banco igual à sessão atual
 
 			if (count($results) > 0){
 
-			$this->setData($results[0]);
+				$this->setData($results[0]);
 
 			}
 		}
-
 
 
 		public function get(int $idcart){
@@ -85,7 +92,7 @@ class Cart extends Model {
 			$sql = new Sql();
 
 			$results = $sql->select("SELECT * FROM tb_carts WHERE idcart = :idcart", [
-				'idcart'=>$idcart
+				':idcart'=>$idcart
 			]);//pega o id cart do banco, vê se é igual ao $idcart passado, e traz
 
 			if (count($results) > 0){//pode ser que o index volte vazio, e se vier vazio, o $results[0] nem existe. Então já seta que se o index for maior que 0 retorne para a posição 0. Isso basicamente fala "se não for nulo"
@@ -95,6 +102,10 @@ class Cart extends Model {
 			}
 		}
 
+		//setta o carrinho com a session
+		
+
+	
 	
 
 	public function save(){
@@ -102,12 +113,12 @@ class Cart extends Model {
 		$sql = new Sql();
 
  		$results = $sql->select("CALL sp_carts_save(:idcart, :dessessionid, :iduser, :deszipcode, :vlfreight, :nrdays)", [
- 			":idcart"=>$this->getidcart(),
- 			":dessessionid"=>$this->getdessessionid(),
- 			":iduser"=>$this->getiduser(),
- 			":deszipcode"=>$this->getdeszipcode(),
- 			":vlfreight"=>$this->getvlfreight(),
- 			":nrdays"=>$this->getnrdays()
+ 			':idcart'=>$this->getidcart(),
+ 			':dessessionid'=>$this->getdessessionid(),
+ 			':iduser'=>$this->getiduser(),
+ 			':deszipcode'=>$this->getdeszipcode(),
+ 			':vlfreight'=>$this->getvlfreight(),
+ 			':nrdays'=>$this->getnrdays()
  		]);
 
  		$this->setData($results[0]);
@@ -231,6 +242,7 @@ class Cart extends Model {
  			//esse coisinha é um calculador para preços de frete do correios, disponibilizado publiclamente no mesmo endereço (e me poupou algum imensurável trabalho)
  			$xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs);
 
+
  			$result = $xml->Servicos->cServico;
 
  			if ($result->MsgErro !=''){
@@ -320,6 +332,8 @@ class Cart extends Model {
 		$this->setvltotal($totals['vlprice'] + $this->getvlfreight());
 		
 	}
+
+
 
 
 }
