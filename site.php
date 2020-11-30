@@ -174,7 +174,9 @@ $app->get("/login", function(){
 	$page = new Page();
 
 	$page->setTpl("login", [
-		'error'=>User::getError()
+		'error'=>User::getError(),
+		'errorRegister'=>User::getErrorRegister(),
+		'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
 	]);
 
 
@@ -203,6 +205,68 @@ $app->get("/logout", function(){
 	User::logout();
 
 	header("Location: /login");
+	exit;
+
+});
+
+$app->post("/register", function(){
+
+	//durante a sessão, salva o que estiver nos campos
+	$_SESSION['registerValues'] = $_POST;
+
+	//se não for definido, ou igual a vazio
+	if (!isset($_POST['name']) || $_POST['name'] == ''){
+
+		User::setErrorRegister("Preencha o seu nome.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	if (!isset($_POST['email']) || $_POST['email'] == ''){
+
+		User::setErrorRegister("Preencha o seu email.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	if (!isset($_POST['password']) || $_POST['password'] == ''){
+
+		User::setErrorRegister("Preencha a senha.");
+		header("Location: /login");
+		exit;
+
+	}
+
+
+	if (User::checkLoginExist($_POST['email']) === true){
+
+		User::setErrorRegister("Este endereço de e-mail já está em uso.");
+		header("Location: /login");
+		exit;
+
+	}
+
+
+
+
+	$user = new User();
+
+	$user->setData([
+		'inadmin'=>0,//se tá cadastrando, o user não é o admin
+		'deslogin'=>$_POST['email'],
+		'desperson'=>$_POST['name'],
+		'desemail'=>$_POST['email'],
+		'despassword'=>$_POST['password'],
+		'nrphone'=>$_POST['phone']
+	]);
+
+	$user->save();
+
+	User::login($_POST['email'], $_POST['password']);//depois de cadastrar, já loga usando os campos do cadastro
+
+	header('Location: /checkout');
 	exit;
 
 });

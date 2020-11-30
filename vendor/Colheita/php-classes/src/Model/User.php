@@ -9,6 +9,7 @@ class User extends Model {
 
 	const SESSION = "User";
 	const ERROR = "UserError";
+	const ERROR_REGISTER = "UserErrorRegister";
 
 
 	public static function getFromSession(){
@@ -24,6 +25,7 @@ class User extends Model {
 		return $user;
 
 	}
+
 
 	public static function checkLogin($inadmin = true){
 
@@ -56,9 +58,11 @@ class User extends Model {
 
 	}
 
+
 	protected $fields = [
 		"iduser", "idperson", "deslogin", "despassword", "inadmin", "dtergister", "desperson", "nrphone", "desemail"
 	];
+
 
 	public static function login($login, $password):User
 	{
@@ -92,6 +96,7 @@ class User extends Model {
 
 	}
 
+
 	public static function verifyLogin($inadmin = true)
 	{
 
@@ -108,12 +113,14 @@ class User extends Model {
 
 	}
 
+
 	public static function logout()
 	{
 
 		$_SESSION[User::SESSION] = NULL;
 
 	}
+
 
 	public static function listALL()
 	{
@@ -144,6 +151,7 @@ class User extends Model {
  
  }
 
+
  	public function save(){
 
  		$sql = new Sql();
@@ -170,7 +178,7 @@ class User extends Model {
  			":iduser"=>$this->getiduser(),
  			":desperson"=>utf8_decode($this->getdesperson()),
  			":deslogin"=>$this->getdeslogin(),
- 			":despassword"=>$this->getdespassword(),
+ 			":despassword"=>User::getPasswordHash($this->getdespassword()),
  			":desemail"=>$this->getdesemail(),
  			":nrphone"=>$this->getnrphone(),
  			":inadmin"=>$this->getinadmin()
@@ -179,6 +187,7 @@ class User extends Model {
  		$this->setData($results[0]);
 
  	}
+
 
  	public function delete(){
 
@@ -194,6 +203,7 @@ class User extends Model {
 		$_SESSION[User::ERROR] = $msg;
 
 	}
+
 	//pega a mensagem de error
 	public static function getError(){//pega o erro, seta em msg, limpa a session, e retorna a msg
 		//se a session_error for acionada, e se não estiver vazio, retorna o erro, ou nada
@@ -211,14 +221,55 @@ class User extends Model {
 
 	}
 
+
+	public static function setErrorRegister($msg){
+
+		$_SESSION[User::ERROR_REGISTER] = $msg;
+
+	}
+	//pega a mensagem de error
+	public static function getErrorRegister(){//pega o erro, seta em msg, limpa a session, e retorna a msg
+		//se a session_error for acionada, e se não estiver vazio, retorna o erro, ou nada
+		$msg = (isset($_SESSION[User::ERROR_REGISTER])) && $_SESSION[User::ERROR_REGISTER] ? $_SESSION[User::ERROR_REGISTER] : "";
+
+		User::clearErrorRegister();//pro erro não ficar para sempre na session
+
+		return $msg;
+
+	}
+
+
+	public static function clearErrorRegister(){
+
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+
+	}
+
+
+	public static function checkLoginExist($login){//verifica se o login já existe
+
+		$sql = new Sql();
+
+		//puxa todos os logins que possui o deslogin igual ao login que vem no registrar do usuário
+		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
+			':deslogin'=>$login
+		]);
+
+		//se vier maior que 0, ou seja, mais de um, retorna true. Senão, faz nada (false)
+		return (count($results) > 0);
+
+
+	}
+
+
 	public static function getPasswordHash($password){
 
 		return password_hash($password, PASSWORD_DEFAULT, [
 			'cost'=>12
 		]);
 
-
 	}
+
 
 
 }
