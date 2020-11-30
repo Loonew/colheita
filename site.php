@@ -240,7 +240,7 @@ $app->post("/register", function(){
 	}
 
 
-	if (User::checkLoginExist($_POST['email']) === true){
+	if (User::checkLoginExists($_POST['email']) === true){
 
 		User::setErrorRegister("Este endereço de e-mail já está em uso.");
 		header("Location: /login");
@@ -270,6 +270,81 @@ $app->post("/register", function(){
 	exit;
 
 });
+
+
+$app->get("/profile", function(){
+
+	User::verifyLogin(false);
+
+	$user = User::getFromSession();
+
+	$page = new Page();
+
+	$page->setTpl("profile", [
+		'user'=>$user->getValues(),
+		'profileMsg'=>User::getSuccess(),
+		'profileError'=>User::getError()
+	]);
+
+});
+
+
+$app->post("/profile", function(){
+
+	User::verifyLogin(false);
+
+	if(!isset($_POST['desperson']) || $_POST['desperson'] === ''){
+
+		User::setError("Preencha o seu nome.");
+		header('Location: /profile');
+		exit;
+
+	}
+
+	if(!isset($_POST['desemail']) || $_POST['desemail'] === ''){
+
+		User::setError("Preencha o seu e-mail.");
+		header('Location: /profile');
+		exit;
+
+	}
+
+	$user = User::getFromSession();
+
+	//se o email que vai pelo post for diferente do já cadastrado, mas pode acontecer do email novo já estar cadastrado
+	if ($_POST['desemail'] !== $user->getdesemail()) {
+
+		if (User::checkLoginExists($_POST['desemail']) === true) {
+
+			User::setError("Este endereço de e-mail já está em uso.");
+			header('Location: /profile');
+			exit;	
+
+		}
+
+	}
+
+
+	$_POST['inadmin'] = $user->getinadmin();//para evitar um command injection, o inadmin do post é o mesmo que está no banco, e não um da sessão
+
+	$_POST['despassword'] = $user->getdespassword();
+	$_POST['desemail'] = $user->getdesemail();
+
+	$user = User::getFromSession();
+
+	$user->setData($_POST);
+
+	$user->update();
+
+	User::setSuccess("Dados alterados com sucesso");
+
+	header('Location: /profile');
+	exit;
+
+	
+
+});
+
 
 
 ?>
