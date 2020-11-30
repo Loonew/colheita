@@ -9,6 +9,8 @@ use \Colheita\Model\User;
 class Cart extends Model {
 
 	const SESSION = "Cart";
+	const SESSION_ERROR = "CartError";
+
 
 	public static function getFromSession(){
 
@@ -121,6 +123,8 @@ class Cart extends Model {
  			':idproduct'=>$product->getidproduct()
 		]);
 
+		$this->getCalculatedTotal();//força update de frete e a soma dos produtos
+
  	}
 
  	public function removeProduct(Product $product, $all = false){
@@ -141,6 +145,8 @@ class Cart extends Model {
  				':idproduct'=>$product->getidproduct()
  			]);
  		}
+
+ 		$this->getCalculatedTotal();//força update de frete e a soma dos produtos
 
  	}
 
@@ -166,6 +172,154 @@ class Cart extends Model {
  		return Product::checkList($rows);
 
  	}
+
+
+ 	public function getProductsTotals(){
+
+ 		$sql = new Sql();
+//pega a soma do preço, medidas de peso e tamanho, e quantidade de itens de tal carrinho
+ 		$results = $sql->select("
+ 			SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, 
+				SUM(vllength) AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
+			FROM tb_products a
+			INNER JOIN tb_cartsproducts b ON a.idproduct = b.idproduct
+			WHERE b.idcart = :idcart AND dtremoved IS NULL;
+ 			", [
+ 				':idcart'=>$this->getidcart()
+ 		]);
+ 		//se o results voltar maior que 0, ou seja, não nulo
+ 		if (count($results) > 0){
+ 			//retorna na posição 0, o início
+ 			return $results[0];
+
+ 		} else {//senão volta vazio para não dar erro
+
+ 			return [];
+
+ 		}
+
+ 	}
+
+
+ 	public function setFreight($nrzipcode){
+
+ 		$nrzipcode = str_replace('-', '', $nrzipcode);//no caso de alguém colocar um tracinho no CEP
+
+ 		$totals = $this->getProductsTotals();//já me trás os valores somados do carrinho, seja o preço, medida ou peso
+
+ 		if ($totals['nrqtd'] > 0) {
+
+ 			if($totals['vlheight'] < 2) $totals['vlheight'] = 2;
+ 			if($totals['vllength'] < 16) $totals['vllength'] = 16;
+ 			$qs = http_build_query([
+ 				'nCdEmpresa'=>'',
+ 				'sDsSenha'=>'',
+ 				'nCdServico'=>'40010',
+ 				'sCepOrigem'=>'72145424',//CEP do shopping JK
+ 				'sCepDestino'=>$nrzipcode,//CEP que o usuário escreveu no carrinho
+ 				'nVlPeso'=>$totals['vlweight'],
+ 				'nCdFormato'=>'1',
+ 				'nVlComprimento'=>$totals['vllength'],
+ 				'nVlAltura'=>$totals['vlheight'],
+ 				'nVlLargura'=>$totals['vlwidth'],
+ 				'nVlDiametro'=>'0',
+ 				'sCdMaoPropria'=>'S',
+ 				'nVlValorDeclarado'=>$totals['vlprice'],
+ 				'sCdAvisoRecebimento'=>'S'
+ 			]);
+
+ 			//esse coisinha é um calculador para preços de frete do correios, disponibilizado publiclamente no mesmo endereço (e me poupou algum imensurável trabalho)
+ 			$xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs);
+
+ 			$result = $xml->Servicos->cServico;
+
+ 			if ($result->MsgErro !=''){
+
+ 				Cart::setMsgError($result->MsgErro);//seta a mensagem de erro para ser mostrada
+
+ 			} else {
+
+ 				Cart::clearMsgError();
+
+
+ 			}
+
+ 			$this->setnrdays($result->PrazoEntrega);
+ 			$this->setvlfreight(Cart::formatValueToDecimal($result->Valor));
+ 			$this->setdeszipcode($nrzipcode);
+
+ 			$this->save();//salva pelamor
+
+ 			return $result;
+
+ 		} else {
+
+
+
+
+ 		}
+ 		
+ 	}
+
+ 	//pra pegar o valor do campo Valor dentro do $value (que tem todos os campos) e substituir a virgula por ponto
+	public static function formatValueToDecimal($value):float{
+
+		$value = str_replace('.', '', $value);//some com o ponto
+		return str_replace(',', '.', $value);//coloca a virgula onde seria o ponto
+
+	}
+	//seta a mensagem de error numa msg
+	public static function setMsgError($msg){
+
+		$_SESSION[Cart::SESSION_ERROR] = $msg;
+
+	}
+	//pega a mensagem de error
+	public static function getMsgError(){//pega o erro, seta em msg, limpa a session, e retorna a msg
+		//se a session_error for acionada, retorna o erro, ou nada
+		$msg = (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : "";
+
+		Cart::clearMsgError();//pro erro não ficar para sempre na session
+
+		return $msg;
+
+	}
+
+	public static function clearMsgError(){
+
+		$_SESSION[Cart::SESSION_ERROR] = NULL;
+
+	}
+
+
+	public function updateFreight(){//isso força o preço do frete a atualizar se eu adicionar ou remover um produto do carrinho
+
+		if ($this->getdeszipcode () != '') {
+
+			$this->setFreight($this->getdeszipcode());
+
+		}
+
+	}
+
+	public function getValues(){//quando chama o getValues, ele não passa o subtotal, então preciso forçar isso
+
+		$this->getCalculatedTotal();//função extra que chama o subtotal
+
+		return parent::getValues();//faz tudo o que o getvalues originalmente já faz
+
+	}
+
+	public function getCalculatedTotal(){
+
+		$this->updateFreight();
+
+		$totals = $this->getProductsTotals();
+
+		$this->setvlsubtotal($totals['vlprice']);
+		$this->setvltotal($totals['vlprice'] + $this->getvlfreight());
+		
+	}
 
 
 }
