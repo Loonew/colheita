@@ -8,6 +8,8 @@ use \Colheita\DB\Sql;
 class User extends Model {
 
 	const SESSION = "User";
+	const ERROR = "UserError";
+
 
 	public static function getFromSession(){
 
@@ -26,11 +28,11 @@ class User extends Model {
 	public static function checkLogin($inadmin = true){
 
 		if (//em qualquer uma dessas situações, o user não tá logado
-			!isset($_SESSION[User::SESSION]) 
+			!isset($_SESSION[User::SESSION]) //se a sessão do usuario nao for definida
 			|| 
-			!$_SESSION[User::SESSION]
+			!$_SESSION[User::SESSION]//se for definida, mas está vazia
 			||
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0//se for definida, não estiver vazia, mas for menor que 0
 		) {
 			//não está logado
 			return false;
@@ -40,9 +42,11 @@ class User extends Model {
 			if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {//cast em bool faz ele retornar true ou false
 
 				return true;
-			} else if ($inadmin === false){
+
+			} else if ($inadmin === false){//se a rota não for da administração
 
 				return true;
+
 			} else {
 
 				return false;
@@ -72,6 +76,8 @@ class User extends Model {
 		if (password_verify($password, $data["despassword"]) === true) {//verifica se a senha vinda como parametro é igual à do banco dentro do $data, retorna true ou false
 
 			$user = new User();
+
+			$data['desperson'] = utf8_encode($data['desperson']);
 			$user->setData($data);
 
 			$_SESSION[User::SESSION] = $user->getValues();
@@ -81,6 +87,22 @@ class User extends Model {
 		} else {
 
 			throw new \Exception("Não foi possível fazer login.");
+
+		}
+
+	}
+
+	public static function verifyLogin($inadmin = true)
+	{
+
+		if (!User::checkLogin($inadmin)){
+
+			if ($inadmin) {
+				header("Location: /admin/login");//faz o redirect
+			} else {
+				header("Location: /login");
+			}
+			exit;
 
 		}
 
@@ -102,18 +124,7 @@ class User extends Model {
 
 	}
 
-	public static function verifyLogin($inadmin = true)
-	{
 
-		if (User::checkLogin($inadmin)
-		) {
-			
-			header("Location: /admin/login");//faz o redirect
-			exit;
-
-		}
-
-	}
 
 	public function get($iduser)
 {
@@ -126,6 +137,8 @@ class User extends Model {
  
 
  $data = $results[0];
+
+ $data['desperson'] = utf8_encode($data['desperson']);
  
  $this->setData($data);
  
@@ -136,9 +149,9 @@ class User extends Model {
  		$sql = new Sql();
 
  		$results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
- 			":desperson"=>$this->getdesperson(),
+ 			":desperson"=>utf8_decode($this->getdesperson()),
  			":deslogin"=>$this->getdeslogin(),
- 			":despassword"=>$this->getdespassword(),
+ 			":despassword"=>User::getPasswordHash($this->getdespassword()),
  			":desemail"=>$this->getdesemail(),
  			":nrphone"=>$this->getnrphone(),
  			":inadmin"=>$this->getinadmin()
@@ -155,7 +168,7 @@ class User extends Model {
 
  		$results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
  			":iduser"=>$this->getiduser(),
- 			":desperson"=>$this->getdesperson(),
+ 			":desperson"=>utf8_decode($this->getdesperson()),
  			":deslogin"=>$this->getdeslogin(),
  			":despassword"=>$this->getdespassword(),
  			":desemail"=>$this->getdesemail(),
@@ -176,7 +189,42 @@ class User extends Model {
  		));
  	}
 
+ 	public static function setError($msg){
+
+		$_SESSION[User::ERROR] = $msg;
+
+	}
+	//pega a mensagem de error
+	public static function getError(){//pega o erro, seta em msg, limpa a session, e retorna a msg
+		//se a session_error for acionada, e se não estiver vazio, retorna o erro, ou nada
+		$msg = (isset($_SESSION[User::ERROR])) && $_SESSION[User::ERROR] ? $_SESSION[User::ERROR] : "";
+
+		User::clearError();//pro erro não ficar para sempre na session
+
+		return $msg;
+
+	}
+
+	public static function clearError(){
+
+		$_SESSION[User::ERROR] = NULL;
+
+	}
+
+	public static function getPasswordHash($password){
+
+		return password_hash($password, PASSWORD_DEFAULT, [
+			'cost'=>12
+		]);
+
+
+	}
+
 
 }
+
+
+
+
 
  ?>

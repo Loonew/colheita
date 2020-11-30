@@ -436,6 +436,8 @@ FROM tb_products a
 INNER JOIN tb_cartsproducts b ON a.idproduct = b.idproduct
 WHERE b.idcart = 1 AND dtremoved IS NULL;
 
+select * from tb_carts;
 
+select * from tb_persons;
 
 
